@@ -1,0 +1,9 @@
+[package]
+name = "pizip"
+version = "0.1.0"
+authors = ["Mike Lubinets <lubinetsm@yandex.ru>"]
+
+[dependencies]
+num = "0.1.36"
+rayon = "0.6"
+rust-gmp = "0.4"
