@@ -7,3 +7,6 @@ authors = ["Mike Lubinets <lubinetsm@yandex.ru>"]
 num = "0.1.36"
 rayon = "0.6"
 rust-gmp = "0.4"
+
+[profile.release]
+lto = true

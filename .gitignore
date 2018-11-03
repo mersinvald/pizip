@@ -3,3 +3,5 @@ target
 .vscode/
 *.iml
 Cargo.lock
+misc/y-cruncher
+data/
