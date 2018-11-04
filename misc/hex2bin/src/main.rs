@@ -54,6 +54,7 @@ fn main() -> Result<(), Error> {
 
     let passes = (input_len as f64 / MAX_INPUT_PASS_SIZE as f64).ceil() as usize;
     let mut bytes_written = 0;
+    let mut bytes_read = 0;
     let mut next_pass_start = 0;
     for i in 0..passes {
         // Calculate the start and finish offsets of the current pass
@@ -75,7 +76,6 @@ fn main() -> Result<(), Error> {
         info!("pass {}: {}..{}", i + 1, pass_start, pass_end);
         let pass_data = &input[pass_start..pass_end];
         next_pass_start = pass_end;
-        info!("{} MB / {} MB read", as_megabytes(next_pass_start - 1), as_megabytes(input.len()));
 
         let threads_cnt = num_cpus::get_physical();
         let mut chunk_len = pass_data.len() / threads_cnt;
@@ -86,10 +86,18 @@ fn main() -> Result<(), Error> {
         debug!("max chunk len: {}", chunk_len);
         info!("starting hex2bin conversion in {} threads", threads_cnt);
 
-        let mut out_chunks = pass_data.par_chunks(chunk_len).enumerate()
+        let mut out_chunks = pass_data.chunks(chunk_len)
+            .map(|c| {
+                let chunk = c.to_vec();
+                bytes_read += chunk.len();
+                info!("{} MB / {} MB read", as_megabytes(bytes_read), as_megabytes(input.len()));
+                chunk
+            })
+            .enumerate()
+            .collect::<Vec<_>>()
+            .into_par_iter()
             .map(|(no, chunk)| {
                 debug!("thread chunk len: {}", chunk.len());
-                // prefetch
                 let out = chunk.chunks(2).map(|byte| {
                     let high = hex_to_4bit(byte[0]);
                     let low = hex_to_4bit(byte[1]);
